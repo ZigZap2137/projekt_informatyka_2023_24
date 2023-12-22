@@ -1,2 +1,2 @@
 Temat projektu: 1
-Scenariusz: 2
+Scenariusz: 1
