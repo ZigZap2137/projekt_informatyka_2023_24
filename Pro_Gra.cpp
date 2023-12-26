@@ -28,6 +28,24 @@ public:
 	void render();
 };
 
+class Gracz
+{
+private:
+	sf::Sprite sprite;
+	sf::Texture texture;
+
+	void iniTexture();
+	void iniSprite();
+
+public:
+	Gracz();
+	virtual ~Gracz();
+
+	//funkcje
+	void update();
+	void render(sf::RenderTarget& target);
+};
+
 const bool Game::running() const
 {
 	return this->window->isOpen();
@@ -44,7 +62,7 @@ void Game::iniWin()
 	this->videomode.height = 600;
 	this->videomode.width = 800;
 
-	this->window = new sf::RenderWindow(sf::VideoMode(800, 600), "SFML animation", sf::Style::Default);
+	this->window = new sf::RenderWindow(sf::VideoMode(800, 600), "Gra statek", sf::Style::Default);
 }
 
 Game::Game()
@@ -90,6 +108,38 @@ void Game::render()
 	this->window->display();
 }
 
+void Gracz::iniTexture()
+{
+	//Za³adowanie tekstury
+}
+
+void Gracz::iniSprite()
+{
+	this->sprite.setTexture(this->texture);
+}
+
+Gracz::Gracz()
+{
+	this->initTexture();
+	this->initSprite();
+
+}
+
+Gracz::~Gracz()
+{
+	
+}
+
+void Gracz::update()
+{
+	
+}
+
+void Gracz::render(sf::RenderTarget& target)
+{
+	target.draw(this->sprite);
+}
+
 int main()
 {
 	//init Game engine
@@ -111,3 +161,4 @@ int main()
 //aktualnosci
 //10.12.23 okno programu
 //12.12.23 dodanie klas i przeniesienie pêtli gry poza funkcje main
+//26.12 dodanie klas gracza
