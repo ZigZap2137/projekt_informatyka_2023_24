@@ -5,6 +5,10 @@
 #include <SFML/Network.hpp>
 #include <iostream>
 
+using namespace std;
+
+class Gracz;
+
 class Game
 {
 private:
@@ -12,8 +16,12 @@ private:
 	sf::VideoMode videomode;
 	sf::Event ev;
 
+	//Gracz
+	Gracz* gracz;
+
 	void iniVar();//zmiennych
 	void iniWin();//okna
+	void iniGracz();
 public:
 	//konstruktory
 	Game();
@@ -34,14 +42,18 @@ private:
 	sf::Sprite sprite;
 	sf::Texture texture;
 
-	void iniTexture();
-	void iniSprite();
+	float movementSpeed;
+
+	void initTexture();
+	void initSprite();
 
 public:
 	Gracz();
 	virtual ~Gracz();
 
 	//funkcje
+	void move(const float dirX, const float dirY);
+
 	void update();
 	void render(sf::RenderTarget& target);
 };
@@ -59,10 +71,15 @@ void Game::iniVar()
 
 void Game::iniWin()
 {
-	this->videomode.height = 600;
-	this->videomode.width = 800;
+	this->videomode.height = 960;
+	this->videomode.width = 1280;
 
-	this->window = new sf::RenderWindow(sf::VideoMode(800, 600), "Gra statek", sf::Style::Default);
+	this->window = new sf::RenderWindow(sf::VideoMode(1280, 960), "Gra statek", sf::Style::Default);
+}
+
+void Game::iniGracz()
+{
+	this->gracz = new Gracz();
 }
 
 Game::Game()
@@ -70,11 +87,14 @@ Game::Game()
 	//taka kolejnoœæ bo na pocz¹tku chcemy pusty wskaŸnik
 	this->iniVar();
 	this->iniWin();
+	this->iniGracz();
 }
 
 Game::~Game()
 {
 	delete this->window;
+	delete this->gracz;
+
 }
 
 void Game::pollEvents()
@@ -94,7 +114,17 @@ void Game::pollEvents()
 
 		}
 	}
+	//ruch gracza
+	if(sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+		this->gracz->move(-1.f, 0.f);
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+		this->gracz->move(1.f, 0.f);
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+		this->gracz->move(0.f, -1.f);
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+		this->gracz->move(0.f, 1.f);
 }
+
 void Game::update()
 {
 	this->pollEvents();
@@ -102,24 +132,37 @@ void Game::update()
 
 void Game::render()
 {
-	this->window->clear(sf::Color::Red);
+	this->window->clear(sf::Color::Green);
 
 	//rysowanie obiektow
+	this->gracz->render(*this->window);
 	this->window->display();
 }
 
-void Gracz::iniTexture()
+void Gracz::initTexture()
 {
 	//Za³adowanie tekstury
+	if (!this->texture.loadFromFile("textures/spaceship.png"))
+	{
+		cout << "ERROR::PLAYER::INITTEXTURE::Nie by³o mo¿liwoœci za³adowaæ pliku tekstury. " << "\n";
+	}
+
+
 }
 
-void Gracz::iniSprite()
+void Gracz::initSprite()
 {
 	this->sprite.setTexture(this->texture);
+
+	//resize sprite
+	this->sprite.scale(0.4f, 0.4f);
+
 }
 
 Gracz::Gracz()
 {
+	this->movementSpeed = 1.f;
+
 	this->initTexture();
 	this->initSprite();
 
@@ -127,12 +170,17 @@ Gracz::Gracz()
 
 Gracz::~Gracz()
 {
-	
+
+}
+
+void Gracz::move(const float dirX, const float dirY)
+{
+	this->sprite.move(this->movementSpeed * dirX, this->movementSpeed * dirY);
 }
 
 void Gracz::update()
 {
-	
+
 }
 
 void Gracz::render(sf::RenderTarget& target)
@@ -162,3 +210,4 @@ int main()
 //10.12.23 okno programu
 //12.12.23 dodanie klas i przeniesienie pêtli gry poza funkcje main
 //26.12 dodanie klas gracza
+//28.12 dodanie sprite'a gracza, i ddanie mo¿liwoœci graczowi ruchu
