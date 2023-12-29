@@ -5,8 +5,11 @@
 #include <SFML/Network.hpp>
 #include <iostream>
 #include <map>
+#include <time.h>
 
 using namespace std;
+
+class Enemy;
 
 class Bullet;
 
@@ -26,7 +29,9 @@ private:
 	//Gracz
 	Gracz* gracz;
 
-	void iniVar();//zmiennych
+	//wrogowie
+	Enemy* enemy;
+
 	void iniWin();//okna
 	void initTextures();
 	void iniGracz();
@@ -57,6 +62,10 @@ private:
 
 	float movementSpeed;
 
+	float attackCooldown;
+	float attackCooldownMAX;
+
+	void initVariables();
 	void initTexture();
 	void initSprite();
 
@@ -64,12 +73,13 @@ public:
 	Gracz();
 	virtual ~Gracz();
 
-	//accessor
 	const sf::Vector2f& getPods() const;
 
 	//funkcje
 	void move(const float dirX, const float dirY);
+	const bool canAttack();
 
+	void updateAttack();
 	void update();
 	void render(sf::RenderTarget& target);
 };
@@ -94,16 +104,34 @@ public:
 	void render(sf::RenderTarget* target);
 };
 
+class Enemy
+{
+private:
+	sf::CircleShape shape;
+	int type;
+	int hp;
+	int hpMAX;
+	int dmg;
+	int points;
+
+	void initShape();
+	void initVariables();
+
+public:
+	Enemy(float pos_x, float pos_y);
+	virtual ~Enemy();
+
+	void update();
+	void render(sf::RenderTarget* target);
+};
+
 const bool Game::running() const
 {
 	return this->window->isOpen();
 }
 
 //konstruktory
-void Game::iniVar()
-{
-	this->window = nullptr;
-}
+
 
 void Game::iniWin()
 {
@@ -116,7 +144,7 @@ void Game::iniWin()
 void Game::initTextures()
 {
 	sf::Texture* texture = new sf::Texture();
-	texture->loadFromFile("textures/Bullet.png");
+	texture->loadFromFile("textures/Bu.png");
 	this->textures["BULLET"] = texture;
 
 }
@@ -124,12 +152,13 @@ void Game::initTextures()
 void Game::iniGracz()
 {
 	this->gracz = new Gracz();
+
+	this->enemy = new Enemy(20.f, 20.f);
 }
 
 Game::Game()
 {
 	//taka kolejnoœæ bo na pocz¹tku chcemy pusty wskaŸnik
-	this->iniVar();
 	this->iniWin();
 	this->initTextures();
 	this->iniGracz();
@@ -151,6 +180,46 @@ Game::~Game()
 		delete i;
 	}
 
+}
+
+void Enemy::initShape()
+{
+	this->shape.setRadius(rand() % 20 + 20);
+	this->shape.setPointCount(rand() % 20 + 1);
+
+}
+
+void Enemy::initVariables()
+{
+	this->type =0 ;
+	this->hp = 0 ;
+	this->hpMAX = 10;
+	this->dmg = 1;
+	this->points = 5;
+}
+
+Enemy::Enemy(float pos_x, float pos_y)
+{
+	this->initShape();
+	this->initVariables();
+
+	this->shape.setPosition(pos_x, pos_y);
+
+}
+
+Enemy::~Enemy()
+{
+
+}
+
+void Enemy::update()
+{
+
+}
+
+void Enemy::render(sf::RenderTarget* target)
+{
+	target->draw(this->shape);
 }
 
 void Game::pollEvents()
@@ -196,25 +265,41 @@ void Game::updateInput()
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
 		this->gracz->move(0.f, 1.f);
 
-	if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+	if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && this->gracz->canAttack())
 	{
-		this->bullets.push_back(new Bullet(this->textures["Bullet"],this->gracz->getPods().x, this->gracz->getPods().y, 0.f, 0.f, 0.f, 0.f, 0.f));
+		//pierwsza wartoœæ odchylenie lewo/prawo, druga kierunek góra/dó³, trzecia prêdkoœæ pocisku
+		this->bullets.push_back(new Bullet(this->textures["BULLET"],this->gracz->getPods().x, this->gracz->getPods().y, 0.f, -1.f, 1.0f));
 	}
 
 }
 
 void Game::updateBullets()
 {
+	unsigned counter = 0;
 	for (auto* bullet : this->bullets)
 	{
 		bullet->update();
+		
+		//wyjœcie pocisku poza górê okna
+		if (bullet->getBounds().top + bullet->getBounds().height < 0.f)
+		{
+			//usuwanie pocisku
+			delete this->bullets.at(counter);
+			this->bullets.erase(this->bullets.begin() + counter);
+			--counter;
+		}
+		++counter;
 	}
 }
 
 void Game::update()
 {
 	this->pollEvents();
+	
 	this->updateInput();
+
+	this->gracz->update();
+
 	this->updateBullets();
 }
 
@@ -230,7 +315,16 @@ void Game::render()
 		bullet->render(this->window);
 	}
 
+	this->enemy->render(this->window);
+
 	this->window->display();
+}
+
+void Gracz::initVariables()
+{
+	this->movementSpeed = 1.f;
+	this->attackCooldownMAX = 10.f;
+	this->attackCooldown = this->attackCooldownMAX;
 }
 
 void Gracz::initTexture()
@@ -255,7 +349,7 @@ void Gracz::initSprite()
 
 Gracz::Gracz()
 {
-	this->movementSpeed = 1.f;
+	this->initVariables();
 
 	this->initTexture();
 	this->initSprite();
@@ -281,7 +375,6 @@ Bullet::Bullet(sf::Texture * texture, float pos_x, float pos_y, float dir_x, flo
 	this->direction.x = dir_x;
 	this->direction.y = dir_y;
 	this->movementSpeed = movement_speed;
-
 
 }
 
@@ -315,9 +408,26 @@ void Gracz::move(const float dirX, const float dirY)
 	this->sprite.move(this->movementSpeed * dirX, this->movementSpeed * dirY);
 }
 
+const bool Gracz::canAttack()
+{
+	if (this->attackCooldown >= this->attackCooldownMAX)
+	{
+		this->attackCooldown = 0.f;
+		return true;
+	}
+	return false;
+	
+}
+
+void Gracz::updateAttack()
+{
+	if (this->attackCooldown < this->attackCooldownMAX)
+		this->attackCooldown += 0.1f;
+}
+
 void Gracz::update()
 {
-
+	this->updateAttack();
 }
 
 void Gracz::render(sf::RenderTarget& target)
@@ -327,6 +437,7 @@ void Gracz::render(sf::RenderTarget& target)
 
 int main()
 {
+	srand(static_cast<unsigned int>(time(0)));
 	//init Game engine
 	Game game;
 
@@ -349,3 +460,4 @@ int main()
 //26.12 dodanie klas gracza
 //28.12 dodanie sprite'a gracza, i ddanie mo¿liwoœci graczowi ruchu
 //28.12 dodanie pocisków do gry
+//29.12 pociski siê poruszaj¹, jest opóŸnienie po ka¿dym strzale, dodanie przeciwników
