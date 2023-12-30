@@ -22,32 +22,27 @@ private:
 	sf::VideoMode videomode;
 	sf::Event ev;
 
-	//Resources
 	std::map<std:: string, sf::Texture*> textures;
 	std::vector<Bullet*>bullets;
 
 	//Gracz
 	Gracz* gracz;
 
-	//wrogowie
+	//przeciwnik
 	Enemy* enemy;
 
 	void iniWin();//okna
 	void initTextures();
 	void iniGracz();
 public:
-	//konstruktory
+
 	Game();
 	virtual ~Game();
-
-	//dostepy(otwieranie okna)
+	//otwieranie okna
 	const bool running() const;
 
 	//funkcje
 	void pollEvents();
-	void run();
-
-	void updatePollEvents();
 	void updateInput();
 	void updateBullets();
 	void update();
@@ -71,7 +66,6 @@ private:
 
 public:
 	Gracz();
-	virtual ~Gracz();
 
 	const sf::Vector2f& getPods() const;
 
@@ -93,11 +87,9 @@ private:
 	sf::Vector2f direction;
 	float movementSpeed;
 public:
-	Bullet();
 	Bullet(sf::Texture * texture, float pos_x, float pos_y, float dir_x, float dir_y, float movement_speed);
-	virtual ~Bullet();
 
-	//Accessor
+	//krawêdzie pocisku
 	const sf::FloatRect getBounds() const;
 
 	void update();
@@ -107,21 +99,15 @@ public:
 class Enemy
 {
 private:
-	sf::CircleShape shape;
-	int type;
-	int hp;
-	int hpMAX;
-	int dmg;
-	int points;
+	sf::ConvexShape shape;
 
 	void initShape();
-	void initVariables();
 
 public:
-	Enemy(float pos_x, float pos_y);
-	virtual ~Enemy();
+	//krawêdzie przeciwnika
 
-	void update();
+
+	Enemy(float pos_x, float pos_y);
 	void render(sf::RenderTarget* target);
 };
 
@@ -129,9 +115,6 @@ const bool Game::running() const
 {
 	return this->window->isOpen();
 }
-
-//konstruktory
-
 
 void Game::iniWin()
 {
@@ -152,8 +135,9 @@ void Game::initTextures()
 void Game::iniGracz()
 {
 	this->gracz = new Gracz();
+	//wspó³rzêdnie przeciwnika
+	this->enemy = new Enemy(600.f, 20.f);
 
-	this->enemy = new Enemy(20.f, 20.f);
 }
 
 Game::Game()
@@ -184,36 +168,25 @@ Game::~Game()
 
 void Enemy::initShape()
 {
-	this->shape.setRadius(rand() % 20 + 20);
-	this->shape.setPointCount(rand() % 20 + 1);
+	this->shape.setPointCount(5);
+	this->shape.setPoint(0, sf::Vector2f(0.f, 0.f));
+	this->shape.setPoint(1, sf::Vector2f(150.f, 10.f));
+	this->shape.setPoint(2, sf::Vector2f(120.f, 90.f));
+	this->shape.setPoint(3, sf::Vector2f(30.f, 100.f));
+	this->shape.setPoint(4, sf::Vector2f(0.f, 50.f));
+
+	this->shape.setFillColor(sf::Color(150, 50, 250));
+	this->shape.setOutlineThickness(10.f);
+	this->shape.setOutlineColor(sf::Color(250, 150, 100));
 
 }
 
-void Enemy::initVariables()
-{
-	this->type =0 ;
-	this->hp = 0 ;
-	this->hpMAX = 10;
-	this->dmg = 1;
-	this->points = 5;
-}
 
 Enemy::Enemy(float pos_x, float pos_y)
 {
 	this->initShape();
-	this->initVariables();
 
 	this->shape.setPosition(pos_x, pos_y);
-
-}
-
-Enemy::~Enemy()
-{
-
-}
-
-void Enemy::update()
-{
 
 }
 
@@ -243,31 +216,21 @@ void Game::pollEvents()
 
 }
 
-void Game::run()
-{
-	;
-}
-
-void Game::updatePollEvents()
-{
-	;
-}
-
 void Game::updateInput()
 {
 	//ruch gracza
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
-		this->gracz->move(-1.f, 0.f);
+		this->gracz->move(-1, 0);
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-		this->gracz->move(1.f, 0.f);
+		this->gracz->move(1, 0);
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
-		this->gracz->move(0.f, -1.f);
+		this->gracz->move(0, -1);
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-		this->gracz->move(0.f, 1.f);
+		this->gracz->move(0, 1);
 
 	if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && this->gracz->canAttack())
 	{
-		//pierwsza wartoœæ odchylenie lewo/prawo, druga kierunek góra/dó³, trzecia prêdkoœæ pocisku
+		//pierwsza wartoœæ odchylenie lewo/prawo, druga kierunek góra/dó³, trzecia prêdkoœæ pocisku; ustawienia strzelania
 		this->bullets.push_back(new Bullet(this->textures["BULLET"],this->gracz->getPods().x, this->gracz->getPods().y, 0.f, -1.f, 1.0f));
 	}
 
@@ -275,7 +238,7 @@ void Game::updateInput()
 
 void Game::updateBullets()
 {
-	unsigned counter = 0;
+	int licznik = 0;
 	for (auto* bullet : this->bullets)
 	{
 		bullet->update();
@@ -284,11 +247,11 @@ void Game::updateBullets()
 		if (bullet->getBounds().top + bullet->getBounds().height < 0.f)
 		{
 			//usuwanie pocisku
-			delete this->bullets.at(counter);
-			this->bullets.erase(this->bullets.begin() + counter);
-			--counter;
+			delete this->bullets.at(licznik);
+			this->bullets.erase(this->bullets.begin() + licznik);
+			--licznik;
 		}
-		++counter;
+		++licznik;
 	}
 }
 
@@ -329,7 +292,7 @@ void Gracz::initVariables()
 
 void Gracz::initTexture()
 {
-	//Za³adowanie tekstury
+	//(komunikat na wypadek nie za³¹downie poprawnie tekstury)
 	if (!this->texture.loadFromFile("textures/spaceship.png"))
 	{
 		cout << "ERROR::PLAYER::INITTEXTURE::Nie by³o mo¿liwoœci za³adowaæ pliku tekstury. " << "\n";
@@ -342,7 +305,7 @@ void Gracz::initSprite()
 {
 	this->sprite.setTexture(this->texture);
 
-	//resize sprite
+	//skalowanie sprite'a gracza
 	this->sprite.scale(0.4f, 0.4f);
 
 }
@@ -356,16 +319,6 @@ Gracz::Gracz()
 
 }
 
-Gracz::~Gracz()
-{
-
-}
-
-Bullet::Bullet()
-{
-
-}
-
 Bullet::Bullet(sf::Texture * texture, float pos_x, float pos_y, float dir_x, float dir_y, float movement_speed)
 {
 	this->texture = texture;
@@ -375,11 +328,6 @@ Bullet::Bullet(sf::Texture * texture, float pos_x, float pos_y, float dir_x, flo
 	this->direction.x = dir_x;
 	this->direction.y = dir_y;
 	this->movementSpeed = movement_speed;
-
-}
-
-Bullet::~Bullet()
-{
 
 }
 
@@ -437,11 +385,11 @@ void Gracz::render(sf::RenderTarget& target)
 
 int main()
 {
-	srand(static_cast<unsigned int>(time(0)));
-	//init Game engine
+	srand(time(NULL));
+	//Wywo³anie silnika gry
 	Game game;
 
-	//Petla gry
+	//Pêtla gry
 	while (game.running())
 	{
 		//update
@@ -457,7 +405,7 @@ int main()
 //aktualnosci
 //10.12.23 okno programu
 //12.12.23 dodanie klas i przeniesienie pêtli gry poza funkcje main
-//26.12 dodanie klas gracza
-//28.12 dodanie sprite'a gracza, i ddanie mo¿liwoœci graczowi ruchu
+//26.12 dodanie klasy gracza
+//28.12 dodanie sprite'a gracza, i dodanie mo¿liwoœci graczowi ruchu
 //28.12 dodanie pocisków do gry
-//29.12 pociski siê poruszaj¹, jest opóŸnienie po ka¿dym strzale, dodanie przeciwników
+//29.12 pociski siê poruszaj¹, jest opóŸnienie po ka¿dym strzale, dodanie przeciwnika
