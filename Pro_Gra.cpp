@@ -1,4 +1,4 @@
-#include <SFML/Graphics.hpp>
+ï»¿#include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
 #include <SFML/Window.hpp>
 #include <SFML/Audio.hpp>
@@ -22,7 +22,7 @@ private:
 	sf::VideoMode videomode;
 	sf::Event ev;
 
-	std::map<std:: string, sf::Texture*> textures;
+	std::map<std::string, sf::Texture*> textures;
 	std::vector<Bullet*>bullets;
 
 	//Gracz
@@ -67,7 +67,7 @@ private:
 public:
 	Gracz();
 
-	const sf::Vector2f& getPods() const;
+	const sf::Vector2f& getPos() const;
 
 	//funkcje
 	void move(const float dirX, const float dirY);
@@ -87,10 +87,10 @@ private:
 	sf::Vector2f direction;
 	float movementSpeed;
 public:
-	Bullet(sf::Texture * texture, float pos_x, float pos_y, float dir_x, float dir_y, float movement_speed);
+	Bullet(sf::Texture* texture, float pos_x, float pos_y, float dir_x, float dir_y, float movement_speed);
 
-	//krawêdzie pocisku
-	const sf::FloatRect getBounds() const;
+	//krawÄ™dzie pocisku
+	const sf::FloatRect getBounds() const;//zwraca globalne wspÃ³Å‚rzÄ™dne elementu (co oznacza Å¼e uwzglÄ™dnia skalowanie, rotacje,i inne przeksztaÅ‚cenia)
 
 	void update();
 	void render(sf::RenderTarget* target);
@@ -101,11 +101,9 @@ class Enemy
 private:
 	sf::ConvexShape shape;
 
-	void initShape();
+	void initShape();//ksztaÅ‚t i kolor przeciwnika
 
 public:
-	//krawêdzie przeciwnika
-
 
 	Enemy(float pos_x, float pos_y);
 	void render(sf::RenderTarget* target);
@@ -135,14 +133,14 @@ void Game::initTextures()
 void Game::iniGracz()
 {
 	this->gracz = new Gracz();
-	//wspó³rzêdnie przeciwnika
+	//wspÃ³Å‚rzÄ™dnie przeciwnika
 	this->enemy = new Enemy(600.f, 20.f);
 
 }
 
 Game::Game()
 {
-	//taka kolejnoœæ bo na pocz¹tku chcemy pusty wskaŸnik
+	//taka kolejnoÅ›Ä‡ bo na poczÄ…tku chcemy pusty wskaÅºnik
 	this->iniWin();
 	this->initTextures();
 	this->iniGracz();
@@ -158,7 +156,7 @@ Game::~Game()
 	{
 		delete i.second;
 	}
-	//usuwanie pocisków
+	//usuwanie pociskÃ³w
 	for (auto* i : this->bullets)
 	{
 		delete i;
@@ -175,9 +173,9 @@ void Enemy::initShape()
 	this->shape.setPoint(3, sf::Vector2f(30.f, 100.f));
 	this->shape.setPoint(4, sf::Vector2f(0.f, 50.f));
 
-	this->shape.setFillColor(sf::Color(150, 50, 250));
+	this->shape.setFillColor(sf::Color(rand() % 256, rand() % 256, rand() % 256));
 	this->shape.setOutlineThickness(10.f);
-	this->shape.setOutlineColor(sf::Color(250, 150, 100));
+	this->shape.setOutlineColor(sf::Color(rand() % 256, rand() % 256, rand() % 256));
 
 }
 
@@ -189,6 +187,7 @@ Enemy::Enemy(float pos_x, float pos_y)
 	this->shape.setPosition(pos_x, pos_y);
 
 }
+
 
 void Enemy::render(sf::RenderTarget* target)
 {
@@ -230,8 +229,8 @@ void Game::updateInput()
 
 	if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && this->gracz->canAttack())
 	{
-		//pierwsza wartoœæ odchylenie lewo/prawo, druga kierunek góra/dó³, trzecia prêdkoœæ pocisku; ustawienia strzelania
-		this->bullets.push_back(new Bullet(this->textures["BULLET"],this->gracz->getPods().x, this->gracz->getPods().y, 0.f, -1.f, 1.0f));
+		//pierwsza wartoÅ›Ä‡ odchylenie lewo/prawo, druga kierunek gÃ³ra/dÃ³Å‚, trzecia prÄ™dkoÅ›Ä‡ pocisku; ustawienia strzelania
+		this->bullets.push_back(new Bullet(this->textures["BULLET"], this->gracz->getPos().x, this->gracz->getPos().y, 0.f, -1.f, 1.0f));
 	}
 
 }
@@ -242,8 +241,8 @@ void Game::updateBullets()
 	for (auto* bullet : this->bullets)
 	{
 		bullet->update();
-		
-		//wyjœcie pocisku poza górê okna
+
+		//wyjÅ›cie pocisku poza gÃ³rÄ™ okna
 		if (bullet->getBounds().top + bullet->getBounds().height < 0.f)
 		{
 			//usuwanie pocisku
@@ -258,7 +257,7 @@ void Game::updateBullets()
 void Game::update()
 {
 	this->pollEvents();
-	
+
 	this->updateInput();
 
 	this->gracz->update();
@@ -273,7 +272,7 @@ void Game::render()
 	//rysowanie obiektow
 	this->gracz->render(*this->window);
 
-	for (auto *bullet : this->bullets)
+	for (auto* bullet : this->bullets)
 	{
 		bullet->render(this->window);
 	}
@@ -292,10 +291,10 @@ void Gracz::initVariables()
 
 void Gracz::initTexture()
 {
-	//(komunikat na wypadek nie za³¹downie poprawnie tekstury)
+	//(komunikat na wypadek nie zaÅ‚Ä…downie poprawnie tekstury)
 	if (!this->texture.loadFromFile("textures/spaceship.png"))
 	{
-		cout << "ERROR::PLAYER::INITTEXTURE::Nie by³o mo¿liwoœci za³adowaæ pliku tekstury. " << "\n";
+		cout << "ERROR::PLAYER::INITTEXTURE::Nie byÅ‚o moÅ¼liwoÅ›ci zaÅ‚adowaÄ‡ pliku tekstury. " << "\n";
 	}
 
 
@@ -319,7 +318,7 @@ Gracz::Gracz()
 
 }
 
-Bullet::Bullet(sf::Texture * texture, float pos_x, float pos_y, float dir_x, float dir_y, float movement_speed)
+Bullet::Bullet(sf::Texture* texture, float pos_x, float pos_y, float dir_x, float dir_y, float movement_speed)
 {
 	this->texture = texture;
 	this->shape.setTexture(*texture);
@@ -346,7 +345,7 @@ void Bullet::render(sf::RenderTarget* target)
 	target->draw(this->shape);
 }
 
-const sf::Vector2f& Gracz::getPods() const
+const sf::Vector2f& Gracz::getPos() const
 {
 	return this->sprite.getPosition();
 }
@@ -364,7 +363,7 @@ const bool Gracz::canAttack()
 		return true;
 	}
 	return false;
-	
+
 }
 
 void Gracz::updateAttack()
@@ -386,10 +385,9 @@ void Gracz::render(sf::RenderTarget& target)
 int main()
 {
 	srand(time(NULL));
-	//Wywo³anie silnika gry
 	Game game;
 
-	//Pêtla gry
+	//PÄ™tla gry
 	while (game.running())
 	{
 		//update
@@ -404,8 +402,9 @@ int main()
 }
 //aktualnosci
 //10.12.23 okno programu
-//12.12.23 dodanie klas i przeniesienie pêtli gry poza funkcje main
+//12.12.23 dodanie klas i przeniesienie pÄ™tli gry(pÄ™tla pollevents) poza funkcje main
 //26.12 dodanie klasy gracza
-//28.12 dodanie sprite'a gracza, i dodanie mo¿liwoœci graczowi ruchu
-//28.12 dodanie pocisków do gry
-//29.12 pociski siê poruszaj¹, jest opóŸnienie po ka¿dym strzale, dodanie przeciwnika
+//28.12 dodanie sprite'a gracza, i dodanie moÅ¼liwoÅ›ci graczowi ruchu
+//28.12 dodanie pociskÃ³w do gry
+//29.12 pociski siÄ™ poruszajÄ…, jest opÃ³Åºnienie po kaÅ¼dym strzale(jest kolizja granicy okna i pocisku), dodanie przeciwnika
+//02.01 small fixes, kolor przeciwnika jest generowany losowo przy otwarciu gry
