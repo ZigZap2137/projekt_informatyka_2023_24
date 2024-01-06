@@ -34,15 +34,17 @@ private:
 	void iniWin();//okna
 	void initTextures();
 	void iniGracz();
+
 public:
 
 	Game();
 	virtual ~Game();
+
 	//otwieranie okna
 	const bool running() const;
 
 	//funkcje
-	void pollEvents();
+	void pollEvents();//zamykanie ESC
 	void updateInput();
 	void updateBullets();
 	void update();
@@ -106,6 +108,7 @@ private:
 public:
 
 	Enemy(float pos_x, float pos_y);
+	bool Coll(const Bullet& bullet);//kolizja pocisku i przeciwnika
 	void render(sf::RenderTarget* target);
 };
 
@@ -162,6 +165,8 @@ Game::~Game()
 		delete i;
 	}
 
+	delete this->enemy;
+
 }
 
 void Enemy::initShape()
@@ -179,6 +184,10 @@ void Enemy::initShape()
 
 }
 
+bool Enemy::Coll(const Bullet& bullet)
+{
+	return this->shape.getGlobalBounds().intersects(bullet.getBounds());
+}
 
 Enemy::Enemy(float pos_x, float pos_y)
 {
@@ -250,6 +259,21 @@ void Game::updateBullets()
 			this->bullets.erase(this->bullets.begin() + licznik);
 			--licznik;
 		}
+		else
+		{
+			// Sprawdź kolizję z przeciwnikiem
+			if (this->enemy->Coll(*bullet))
+			{
+				// Usuń pocisk i przeciwnika
+				delete this->bullets.at(licznik);
+				this->bullets.erase(this->bullets.begin() + licznik);
+				delete this->enemy;
+				this->enemy = nullptr;
+
+				this->window->close();
+				break; // Przerwij pętlę, ponieważ przeciwnik został zniszczony
+			}
+		}
 		++licznik;
 	}
 }
@@ -277,8 +301,10 @@ void Game::render()
 		bullet->render(this->window);
 	}
 
-	this->enemy->render(this->window);
-
+	if (this->enemy != nullptr)
+	{
+		this->enemy->render(this->window);
+	}
 	this->window->display();
 }
 
@@ -408,3 +434,4 @@ int main()
 //28.12 dodanie pocisków do gry
 //29.12 pociski się poruszają, jest opóźnienie po każdym strzale(jest kolizja granicy okna i pocisku), dodanie przeciwnika
 //02.01 small fixes, kolor przeciwnika jest generowany losowo przy otwarciu gry
+//06.01 dodanie funkcji zwracającej kolizjie pocisku i przeciwnika(Coll), dodanie do UpdateBullets, fragmentu odpowiedzialnego za usuwanie przeciwnika po wykryciu kolizji i zamknięcie po tym okna z grą
