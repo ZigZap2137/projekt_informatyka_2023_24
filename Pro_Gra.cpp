@@ -1,11 +1,19 @@
-﻿#include <SFML/Graphics.hpp>
+﻿#ifdef _MSC_VER
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+#include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
 #include <SFML/Window.hpp>
 #include <SFML/Audio.hpp>
 #include <SFML/Network.hpp>
 #include <iostream>
+#include <stdio.h>
+#include<stdlib.h>
+#include <string.h>
+#include <fstream>
 #include <map>
 #include <time.h>
+#include <windows.h>
 
 using namespace std;
 
@@ -61,7 +69,7 @@ private:
 
 	float attackCooldown;
 	float attackCooldownMAX;
-
+	//zmieniając atClMAX, w funkcji poniżej można zmienic opóźnienie kolejnego pocisku
 	void initVariables();
 	void initTexture();
 	void initSprite();
@@ -143,7 +151,7 @@ void Game::iniGracz()
 
 Game::Game()
 {
-	//taka kolejność bo na początku chcemy pusty wskaźnik
+	//początku pusty wskaźnik
 	this->iniWin();
 	this->initTextures();
 	this->iniGracz();
@@ -271,6 +279,7 @@ void Game::updateBullets()
 				this->enemy = nullptr;
 
 				this->window->close();
+
 				break; // Przerwij pętlę, ponieważ przeciwnik został zniszczony
 			}
 		}
@@ -311,7 +320,7 @@ void Game::render()
 void Gracz::initVariables()
 {
 	this->movementSpeed = 1.f;
-	this->attackCooldownMAX = 10.f;
+	this->attackCooldownMAX = 20.f;
 	this->attackCooldown = this->attackCooldownMAX;
 }
 
@@ -408,8 +417,32 @@ void Gracz::render(sf::RenderTarget& target)
 	target.draw(this->sprite);
 }
 
+typedef struct {
+	//gracz moze wybrać według standardu, maksymalnie nazwe o długości 16 znaków
+	char Nazwa[15];
+	int Id;
+} student;
+
 int main()
 {
+	student* dane;
+	dane = (student*)malloc(50 * sizeof(student));//tabl 50 pracownikow
+	printf("Nazwa: ");
+	scanf("%s", &dane[0].Nazwa);
+	printf("Id: ");
+	scanf("%d", &dane[0].Id);
+	printf("Nazwa: %s\n", dane[0].Nazwa);
+	printf("Indeks Studenta: %d\n", dane[0].Id);
+	//chce by w pliku Dane_gracza, dane były cały czas dopisywane, przy każdym otwarciu gry
+	FILE* file = fopen("Dane_gracza.txt", "a+");
+	if(file != NULL)
+	{
+		fprintf(file, "Nazwa: %s\n", dane[0].Nazwa);
+		fprintf(file, "Indeks studenta: %d\n", dane[0].Id);
+		fclose(file);
+	}
+	free(dane);
+
 	srand(time(NULL));
 	Game game;
 
@@ -435,3 +468,4 @@ int main()
 //29.12 pociski się poruszają, jest opóźnienie po każdym strzale(jest kolizja granicy okna i pocisku), dodanie przeciwnika
 //02.01 small fixes, kolor przeciwnika jest generowany losowo przy otwarciu gry
 //06.01 dodanie funkcji zwracającej kolizjie pocisku i przeciwnika(Coll), dodanie do UpdateBullets, fragmentu odpowiedzialnego za usuwanie przeciwnika po wykryciu kolizji i zamknięcie po tym okna z grą
+//13.01 Dodanie: zapisu do pliku nazwy gracza i indeksu studenta z tablicy struktur (dane podaje gracz z klawiatury w oknie konsoli), wykorzystując przy tym, dynamiczną alokacje pamięci mallock
