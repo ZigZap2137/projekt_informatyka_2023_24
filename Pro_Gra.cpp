@@ -300,7 +300,7 @@ void Game::update()
 
 void Game::render()
 {
-	this->window->clear(sf::Color::Black);
+	this->window->clear(sf::Color::Cyan);
 
 	//rysowanie obiektow
 	this->gracz->render(*this->window);
@@ -417,6 +417,35 @@ void Gracz::render(sf::RenderTarget& target)
 	target.draw(this->sprite);
 }
 
+void firstW()
+{
+	sf::RenderWindow win(sf::VideoMode(1200, 960), "Okno Start");
+	sf::Font font;
+	font.loadFromFile("arial.ttf");
+	sf::Text text;
+	text.setFont(font);
+	text.setString("Nacisnij Enter, aby rozpoczac gre");
+	text.setCharacterSize(40);
+	text.setFillColor(sf::Color (rand() % 256, rand() % 256, rand() % 256));
+	text.setPosition(400, 430);
+	while (win.isOpen())
+	{
+		sf::Event event;
+		while (win.pollEvent(event))
+		{
+			if (event.type == sf::Event::Closed)
+				win.close();
+			else if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter)
+				win.close();
+		}
+		win.clear(sf::Color::Black);
+		win.draw(text);
+		win.display();
+	}
+
+
+}
+
 typedef struct {
 	//gracz moze wybrać według standardu, maksymalnie nazwe o długości 16 znaków
 	char Nazwa[15];
@@ -425,6 +454,7 @@ typedef struct {
 
 int main()
 {
+	srand(time(NULL));
 	student* dane;
 	dane = (student*)malloc(50 * sizeof(student));//tabl 50 pracownikow
 	printf("Nazwa: ");
@@ -442,8 +472,13 @@ int main()
 		fclose(file);
 	}
 	free(dane);
+	
+	//okno startowe
+	firstW();
 
-	srand(time(NULL));
+	//odczekaj 1s po zamknięciu tego okna
+	Sleep(1000);
+
 	Game game;
 
 	//Pętla gry
@@ -467,5 +502,6 @@ int main()
 //28.12 dodanie pocisków do gry
 //29.12 pociski się poruszają, jest opóźnienie po każdym strzale(jest kolizja granicy okna i pocisku), dodanie przeciwnika
 //02.01 small fixes, kolor przeciwnika jest generowany losowo przy otwarciu gry
-//06.01 dodanie funkcji zwracającej kolizjie pocisku i przeciwnika(Coll), dodanie do UpdateBullets, fragmentu odpowiedzialnego za usuwanie przeciwnika po wykryciu kolizji i zamknięcie po tym okna z grą
+//06.01 dodanie funkcji zwracającej kolizje pocisku i przeciwnika(Coll), dodanie do UpdateBullets, fragmentu odpowiedzialnego za usuwanie przeciwnika po wykryciu kolizji i zamknięcie po tym okna z grą
 //13.01 Dodanie: zapisu do pliku nazwy gracza i indeksu studenta z tablicy struktur (dane podaje gracz z klawiatury w oknie konsoli), wykorzystując przy tym, dynamiczną alokacje pamięci mallock
+//14.01 Dodanie drugiego okna, z losowo kolorowym napisem wykorzystującym czcionkę Arial, oczekującym na kliknięcie przycisku enter, okna startowego które pojawia się przed pojawiawieniem się okna z grą
