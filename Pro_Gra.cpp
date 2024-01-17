@@ -453,7 +453,7 @@ int main()
 {
 	srand(time(NULL));
 	student* dane;
-	dane = (student*)malloc(50 * sizeof(student));//tabl 50 pracownikow
+	dane = (student*)malloc(50 * sizeof(student));
 	printf("Nazwa: ");
 	scanf("%s", &dane[0].Nazwa);
 	printf("Id: ");
@@ -475,7 +475,7 @@ int main()
 
 	//odczekaj 1s po zamknięciu tego okna
 	Sleep(1000);
-
+	
 	Game game;
 
 	//Pętla gry
