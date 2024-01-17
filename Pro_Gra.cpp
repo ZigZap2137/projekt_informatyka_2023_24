@@ -421,7 +421,7 @@ void firstW()
 	font.loadFromFile("arial.ttf");
 	sf::Text text;
 	text.setFont(font);
-	text.setString("Zestrzel przeciwnika na srodku, prawym przyciskiem myszy,\nnacisnij Enter, aby rozpoczac gre");
+	text.setString("Zestrzel przeciwnika na srodku, lewym przyciskiem myszy\nporuszasz sie klawiszami w,a,s,d\nnacisnij Enter, aby rozpoczac gre");
 	text.setCharacterSize(30);
 	text.setFillColor(sf::Color (rand() % 256, rand() % 256, rand() % 256));
 	text.setPosition(200, 430);
