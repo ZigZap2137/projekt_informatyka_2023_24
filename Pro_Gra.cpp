@@ -127,9 +127,6 @@ const bool Game::running() const
 
 void Game::iniWin()
 {
-	this->videomode.height = 960;
-	this->videomode.width = 1280;
-
 	this->window = new sf::RenderWindow(sf::VideoMode(1280, 960), "Gra statek", sf::Style::Default);
 }
 
@@ -319,7 +316,7 @@ void Game::render()
 
 void Gracz::initVariables()
 {
-	this->movementSpeed = 1.f;
+	this->movementSpeed = 0.5f;
 	this->attackCooldownMAX = 20.f;
 	this->attackCooldown = this->attackCooldownMAX;
 }
@@ -424,10 +421,10 @@ void firstW()
 	font.loadFromFile("arial.ttf");
 	sf::Text text;
 	text.setFont(font);
-	text.setString("Nacisnij Enter, aby rozpoczac gre");
-	text.setCharacterSize(40);
+	text.setString("Zestrzel przeciwnika na srodku, prawym przyciskiem myszy,\nnacisnij Enter, aby rozpoczac gre");
+	text.setCharacterSize(30);
 	text.setFillColor(sf::Color (rand() % 256, rand() % 256, rand() % 256));
-	text.setPosition(400, 430);
+	text.setPosition(200, 430);
 	while (win.isOpen())
 	{
 		sf::Event event;
@@ -505,3 +502,4 @@ int main()
 //06.01 dodanie funkcji zwracającej kolizje pocisku i przeciwnika(Coll), dodanie do UpdateBullets, fragmentu odpowiedzialnego za usuwanie przeciwnika po wykryciu kolizji i zamknięcie po tym okna z grą
 //13.01 Dodanie: zapisu do pliku nazwy gracza i indeksu studenta z tablicy struktur (dane podaje gracz z klawiatury w oknie konsoli), wykorzystując przy tym, dynamiczną alokacje pamięci mallock
 //14.01 Dodanie drugiego okna, z losowo kolorowym napisem wykorzystującym czcionkę Arial, oczekującym na kliknięcie przycisku enter, okna startowego które pojawia się przed pojawiawieniem się okna z grą
+//17.01 small fixes
